@@ -2,7 +2,6 @@ class Game < ActiveRecord::Base
   belongs_to :user, counter_cache: true
   belongs_to :game_session
   validates_numericality_of :bet, greater_than: 0, only_integer: true, if: :game_started
-  before_create :shuffle_time
 
   state_machine :state, initial: :started do 
     event :finish do
@@ -19,8 +18,8 @@ class Game < ActiveRecord::Base
     end
   end
 
-  def shoe_penetration
-    penetration_level(game_session.decks)
+  def shuffle_time
+    game_session.penetration_level < 0.33333
   end
 
   def deal
@@ -142,20 +141,5 @@ class Game < ActiveRecord::Base
   def game_started
     state == 'players_turn'
   end
-
-  def shuffle_time
-    if penetration_level(self.game_session.decks) < 0.30
-      self.game_session = GameSession.create!(user: self.user)
-    end
-  end
-
-  def penetration_level(decks)
-    played_cards = 0
-    decks.each do |deck|
-      played_cards += deck.played_cards.count
-    end
-    1 - (played_cards / (decks.count * Card.count.to_f))
-  end
-
 
 end

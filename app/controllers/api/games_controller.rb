@@ -7,7 +7,10 @@ class Api::GamesController < ApplicationController
 
   def create
     @game ||= Game.create!(user: @user, game_session: @session)
-    @cards = Card.all
+    if @game.shuffle_time
+      @game_session = GameSession.create(user: @user)
+      @game.update_attributes(game_session_id: @game_session.id)
+    end
     if @game
       render status: 200, json: [@game]
     else

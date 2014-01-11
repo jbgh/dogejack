@@ -1,7 +1,12 @@
 {{#if winner}}
-  <h3>{{winner}}</h3>
+  <h2>{{winner}} Wins</h2>
 {{/if}}
-<h3>Shoe Penetration: {{penetration}}%</h3>
+<h3>Shoe Penetration: {{gameSession.penetration}}%</h3>
+<h3>High Cards: {{gameSession.high}}</h3>
+<h3>Low Cards: {{gameSession.low}}</h3>
+<h3>Running Count: {{gameSession.runningCount}}</h3>
+<h3>True Count: {{gameSession.truecount}}</h3>
+
 <h3>Current Bet: {{bet}}</h3>
 <h3>Player Cards</h3>
 <h5>Player Score: {{playerScore}}</h5>

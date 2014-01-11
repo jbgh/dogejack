@@ -8,6 +8,7 @@ App.Game = DS.Model.extend({
   winner: DS.attr(),
   bet: DS.attr(),
   shoePenetration: DS.attr(),
+  gameSession: DS.belongsTo('gameSession'),
 
   playerHand: function(){
     var that = this;
@@ -23,8 +24,5 @@ App.Game = DS.Model.extend({
     });
   }.property('dealerCards'),
 
-  penetration: function(){
-    return Math.floor(this.get('shoePenetration') * 100);
-  }.property('shoePenetration')
 
 });

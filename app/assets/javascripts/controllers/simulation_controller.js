@@ -1,7 +1,11 @@
 App.SimulationController = Ember.ArrayController.extend({
   simulating: false,
+  lowBankroll: 0,
+  highBankroll: 0,
   endingBankroll: 0,
   standardDeviation: 0,
+  averageBet: 0,
+  maxBet: 0,
 
   cardMultiplier: function(){
     return parseInt(this.get('deckCount'), 10) * 4;
@@ -31,8 +35,9 @@ App.SimulationController = Ember.ArrayController.extend({
       var splitCounter = [];
       var doubleCounter = [];
       var trueCountHistory = [];
-      var playerHandHistory = [];
-      var dealerHandHistory = [];
+      var betHistory = [];
+      // var playerHandHistory = [];
+      // var dealerHandHistory = [];
 
       function deal(shoe){
         var card = shoe.pop();
@@ -53,9 +58,14 @@ App.SimulationController = Ember.ArrayController.extend({
 
         return runningCount / (penetrationLevel * (fullShoeLength / 52));
       }
+      // Math
 
       function sumArray(array){
         return _.reduce(array, function(memo, num) { return memo + num; }, 0);
+      }
+
+      function average(array){
+        return sumArray(array)/array.length;
       }
 
       function calcScore(hand){
@@ -492,7 +502,7 @@ App.SimulationController = Ember.ArrayController.extend({
             if (basicStrategy(playerHand[l], dealerHand) === 'double'){
               playerHand[l].push(deal(currentShoe));
               doubleCounter.push(l);
-            } else if (basicStrategy(playerHand[l], dealerHand) === 'hit'){
+            } else {
               do {
                 playerHand[l].push(deal(currentShoe));
               } while (basicStrategy(playerHand[l], dealerHand) === 'hit');
@@ -527,10 +537,12 @@ App.SimulationController = Ember.ArrayController.extend({
 
         }
 
-
         // Hand History
-        playerHandHistory.push(playerHand.slice(0));
-        dealerHandHistory.push(dealerHand.slice(0));
+        // playerHandHistory.push(playerHand.slice(0));
+        // dealerHandHistory.push(dealerHand.slice(0));
+
+        // Bet History
+        betHistory.push(currentBet);
 
         // Clear out the hands
         playerHand.length = 0;
@@ -543,6 +555,11 @@ App.SimulationController = Ember.ArrayController.extend({
         }
       }
 
+      debugger;
+      that.set('averageBet', average(betHistory));
+      that.set('maxBet', _.max(betHistory));
+      that.set('lowBankroll', _.min(Object.keys(bankrollHistory).map(function(v) { return bankrollHistory[v]; })));
+      that.set('highBankroll', _.max(Object.keys(bankrollHistory).map(function(v) { return bankrollHistory[v]; })));
       that.set('endingBankroll', bankroll);
 
       that.toggleProperty('simulating');

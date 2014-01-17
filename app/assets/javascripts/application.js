@@ -13,6 +13,8 @@
 //= require jquery
 //= require jquery_ujs
 //= require vendor/underscore
+//= require vendor/crossfilter.min
+//= require vendor/d3.v3.min
 //= require handlebars
 //= require ember
 //= require ember-data

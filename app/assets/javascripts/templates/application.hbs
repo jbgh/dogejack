@@ -15,6 +15,9 @@
         {{#link-to 'game' tagName='li' href=false}}
           {{#link-to 'game'}}Play Now{{/link-to}}
         {{/link-to}}
+        {{#link-to 'simulation' tagName='li' href=false}}
+          {{#link-to 'simulation'}}Simulation{{/link-to}}
+        {{/link-to}}
         {{#if session.isAuthenticated}}
         <p class="navbar-text">Welcome {{currentUser.username}}. {{currentUser.won}}-{{currentUser.lost}}-{{currentUser.tied}}. Balance: {{#each currentUser.wallets}}{{this.balance}}{{/each}}</p>
         {{ else }}

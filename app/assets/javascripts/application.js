@@ -12,6 +12,7 @@
 //
 //= require jquery
 //= require jquery_ujs
+//= require vendor/underscore
 //= require handlebars
 //= require ember
 //= require ember-data

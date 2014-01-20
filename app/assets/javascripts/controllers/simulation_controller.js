@@ -79,14 +79,15 @@ App.SimulationController = Ember.ArrayController.extend({
       }
 
       function betterContains(array, value){
-        var containsTest = false;
-        for (n=0,lenTwo = array.length; n < lenTwo; n++){
-          if (array[n] === value){
-            containsTest = true;
+        var containsTest = 0;
+        var len = array.length;
+        while(len--){
+          if (array[len] === value){
+            containsTest = 1;
           }
         }
 
-        if(containsTest === true){
+        if(containsTest === 1){
           return true;
         } else {
           return false;
@@ -155,16 +156,19 @@ App.SimulationController = Ember.ArrayController.extend({
 
       function basicStrategy(playerHand, dealerHand){
         var holeCard = dealerHand[0];
+        var playerHandBJ = blackJack(playerHand);
+        var dealerHandBJ = blackJack(dealerHand);
+        var playerScore = calcScore(playerHand);
 
-        if (blackJack(playerHand) && blackJack(dealerHand) === false){
+        if (playerHandBJ && dealerHandBJ === false){
           return 'player blackjack';
         }
 
-        if (blackJack(dealerHand) && blackJack(playerHand) === false){
+        if (dealerHandBJ && playerHandBJ === false){
           return 'dealer blackjack';
         }
 
-        if (blackJack(dealerHand) && blackJack(playerHand)){
+        if (dealerHandBJ && playerHandBJ){
           return 'blackjack push';
         }
 
@@ -178,7 +182,7 @@ App.SimulationController = Ember.ArrayController.extend({
           if (playerHand[0] === 'A' && playerHand[1] === 'A'){
             return 'split';
           }
-          switch (calcScore(playerHand)){
+          switch (playerScore){
             case 4:
               if (holeCard < 8){
                 return 'split';
@@ -230,8 +234,8 @@ App.SimulationController = Ember.ArrayController.extend({
 
         // Soft Hands
 
-        if (softHand(playerHand) && blackJack(playerHand) === false && blackJack(dealerHand) === false){
-          switch(calcScore(playerHand)){
+        if (softHand(playerHand) && playerHandBJ === false && dealerHandBJ === false){
+          switch(playerScore){
             case 13:
               if (holeCard === 5 || holeCard === 6){
                 if (playerHand.length === 2){
@@ -296,11 +300,11 @@ App.SimulationController = Ember.ArrayController.extend({
             case 21:
               return 'stand';
           }
-        } else if (blackJack(playerHand) === false && blackJack(dealerHand) === false) {
+        } else if (playerHandBJ === false && dealerHandBJ === false) {
 
           // Hard Hands
 
-          switch(calcScore(playerHand)){
+          switch(playerScore){
             case 5:
               return 'hit';
             case 6:
@@ -397,26 +401,29 @@ App.SimulationController = Ember.ArrayController.extend({
           dealerHand.push(deal(currentShoe));
         }
 
+        var playerScore = calcScore(playerHand);
+        var dealerScore = calcScore(dealerHand);
+
         // Dealer busts
 
-        if (calcScore(dealerHand) > 21){
+        if (dealerScore > 21){
           bankroll = bankroll + (currentBet * 2);
           bankrollHistory[i] = bankroll;
 
         // Player wins
 
-        } else if (calcScore(playerHand) > calcScore(dealerHand)){
+        } else if (playerScore > dealerScore){
           bankroll = bankroll + (currentBet * 2);
           bankrollHistory[i] = bankroll;
 
         // Dealer wins
 
-        } else if (calcScore(playerHand) < calcScore(dealerHand)){
+        } else if (playerScore < dealerScore){
           bankrollHistory[i] = bankroll;
 
         // Push
 
-        } else if (calcScore(playerHand) === calcScore(dealerHand)){
+        } else if (playerScore === dealerScore){
           bankrollHistory[i] = bankroll + currentBet;
         }
       }
@@ -449,40 +456,42 @@ App.SimulationController = Ember.ArrayController.extend({
           dealerHand.push(deal(currentShoe));
         }
 
+        var initialBasicStrategy = basicStrategy(playerHand, dealerHand);
+
         // Player BlackJack
 
-        if (basicStrategy(playerHand, dealerHand) === 'player blackjack'){
+        if (initialBasicStrategy === 'player blackjack'){
           bankroll = bankroll + (currentBet * 2.5);
           bankrollHistory[i] = bankroll;
         }
         // Dealer BlackJack
 
-        if (basicStrategy(playerHand, dealerHand) === 'dealer blackjack'){
+        if (initialBasicStrategy === 'dealer blackjack'){
           bankrollHistory[i] = bankroll;
         }
 
         // BlackJack Push
 
-        if (basicStrategy(playerHand, dealerHand) === 'blackjack push'){
+        if (initialBasicStrategy === 'blackjack push'){
           bankrollHistory[i] = bankroll + currentBet;
         }
 
         // Surrender
 
-        if (basicStrategy(playerHand, dealerHand) === 'surrender'){
+        if (initialBasicStrategy === 'surrender'){
           bankroll = bankroll + (currentBet * 0.5);
           bankrollHistory[i] = bankroll;
         }
 
         // Stand
 
-        if (basicStrategy(playerHand, dealerHand) === 'stand'){
+        if (initialBasicStrategy === 'stand'){
           
           playerStands();
 
         // Double
 
-        } else if (basicStrategy(playerHand, dealerHand) === 'double'){
+        } else if (initialBasicStrategy === 'double'){
           bankroll = bankroll - currentBet;
           currentBet = currentBet * 2;
 
@@ -492,7 +501,7 @@ App.SimulationController = Ember.ArrayController.extend({
 
         // Hit
 
-        } else if (basicStrategy(playerHand, dealerHand) === 'hit'){
+        } else if (initialBasicStrategy === 'hit'){
 
           do {
             playerHand.push(deal(currentShoe));
@@ -506,7 +515,7 @@ App.SimulationController = Ember.ArrayController.extend({
 
         // Split
 
-        } else if (basicStrategy(playerHand, dealerHand) === 'split'){
+        } else if (initialBasicStrategy === 'split'){
 
           playerHand = split(playerHand);
           // Go through and resplit as many times as possible

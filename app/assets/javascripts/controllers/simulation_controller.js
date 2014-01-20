@@ -30,18 +30,25 @@ App.SimulationController = Ember.ArrayController.extend({
       var playerHand = [];
       var dealerHand = [];
       var bankroll = parseInt(that.get('startingBankroll'), 10);
-      var bankrollHistory = {};
+      var bankrollHistory = [];
       var currentBet = 0;
       var splitCounter = [];
       var doubleCounter = [];
       var trueCountHistory = [];
       var betHistory = [];
+      var highCards = [];
+      var lowCards = [];
       // var playerHandHistory = [];
       // var dealerHandHistory = [];
 
       function deal(shoe){
         var card = shoe.pop();
         usedCards.push(card);
+        if (card === 10 || card === 'A'){
+          highCards.push(card);
+        } else if (card < 7){
+          lowCards.push(card);
+        }
         return card;
       }
 
@@ -52,24 +59,42 @@ App.SimulationController = Ember.ArrayController.extend({
       function getTrueCount(shoe, discard){
         var fullShoeLength = shoe.length + discard.length;
         var penetrationLevel = shoe.length / fullShoeLength;
-        var highCards = _.filter(discard, function(card){ return card === 10 || card === 'A'; });
-        var lowCards = _.filter(discard, function(card){ return card < 7;});
         var runningCount = lowCards.length - highCards.length;
 
         return runningCount / (penetrationLevel * (fullShoeLength / 52));
       }
+
       // Math
 
       function sumArray(array){
-        return _.reduce(array, function(memo, num) { return memo + num; }, 0);
+        var sum = 0;
+        for (m=0,len = array.length; m < len; m++){
+          sum += array[m];
+        }
+        return sum;
       }
 
       function average(array){
         return sumArray(array)/array.length;
       }
 
+      function betterContains(array, value){
+        var containsTest = false;
+        for (n=0,lenTwo = array.length; n < lenTwo; n++){
+          if (array[n] === value){
+            containsTest = true;
+          }
+        }
+
+        if(containsTest === true){
+          return true;
+        } else {
+          return false;
+        }
+      }
+
       function calcScore(hand){
-        if (hand.contains('A')){
+        if (betterContains(hand, 'A')){
           var numOfAce = _.filter(hand, function(card){ return card === 'A'; }).length;
           var handWithoutAce = _.filter(hand, function(card){ return card !== 'A'; });
           if ((sumArray(handWithoutAce) + numOfAce) < 12){
@@ -83,7 +108,7 @@ App.SimulationController = Ember.ArrayController.extend({
       }
 
       function softHand(hand){
-        if (hand.contains('A')){
+        if (betterContains(hand, 'A')){
           var numOfAce = _.filter(hand, function(card){ return card === 'A'; }).length;
           var handWithoutAce = _.filter(hand, function(card){ return card !== 'A'; });
           if ((sumArray(handWithoutAce) + numOfAce) < 12){
@@ -97,7 +122,7 @@ App.SimulationController = Ember.ArrayController.extend({
       }
 
       function blackJack(hand){
-        if (_.contains(hand, 'A') && _.contains(hand, 10) && hand.length === 2){
+        if (betterContains(hand, 'A') && betterContains(hand, 10) && hand.length === 2){
           return true;
         } else {
           return false;
@@ -486,7 +511,7 @@ App.SimulationController = Ember.ArrayController.extend({
           playerHand = split(playerHand);
           // Go through and resplit as many times as possible
           splitCounter.length = 0;
-          for(var k=0; k < playerHand.length - 1; k++){
+          for(var k=0; k < playerHand.length; k++){
             if (basicStrategy(playerHand[k], dealerHand) === 'split'){
               resplit(playerHand, k);
               splitCounter.push(k);
@@ -498,11 +523,11 @@ App.SimulationController = Ember.ArrayController.extend({
           // Play through each split hand
           // Push hand indexes where doubled
           doubleCounter.length = 0;
-          for(var l=0; l < playerHand.length - 1; l++){
+          for(var l=0; l < playerHand.length; l++){
             if (basicStrategy(playerHand[l], dealerHand) === 'double'){
               playerHand[l].push(deal(currentShoe));
               doubleCounter.push(l);
-            } else {
+            } else if (basicStrategy(playerHand[l], dealerHand) === 'hit'){
               do {
                 playerHand[l].push(deal(currentShoe));
               } while (basicStrategy(playerHand[l], dealerHand) === 'hit');
@@ -520,9 +545,9 @@ App.SimulationController = Ember.ArrayController.extend({
             bankroll = bankroll + ((currentBet * playerHand.length) + (currentBet * (doubleCounter.length + 1)));
           }
           // If not then check to see which hands won and pay those out
-          for(var p=0; p < playerHand.length - 1; p++){
+          for(var p=0; p < playerHand.length; p++){
             if (calcScore(playerHand[p]) > calcScore(dealerHand) && basicStrategy(playerHand, dealerHand) !== 'bust'){
-              if (_.contains(doubleCounter, p)){
+              if (betterContains(doubleCounter, p)){
                 bankroll = bankroll + (currentBet * 2);
               } else {
                 bankroll = bankroll + currentBet;
@@ -552,10 +577,11 @@ App.SimulationController = Ember.ArrayController.extend({
         if ((usedCards.length / that.get('shoe').length) > 0.75){
           currentShoe = shuffle(that.get('shoe'));
           usedCards.length = 0;
+          highCards.length = 0;
+          lowCards.length = 0;
         }
       }
 
-      debugger;
       that.set('averageBet', average(betHistory));
       that.set('maxBet', _.max(betHistory));
       that.set('lowBankroll', _.min(Object.keys(bankrollHistory).map(function(v) { return bankrollHistory[v]; })));

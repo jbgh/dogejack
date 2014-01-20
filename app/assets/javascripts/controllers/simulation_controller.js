@@ -86,7 +86,6 @@ App.SimulationController = Ember.ArrayController.extend({
             containsTest = 1;
           }
         }
-
         if(containsTest === 1){
           return true;
         } else {
@@ -196,10 +195,10 @@ App.SimulationController = Ember.ArrayController.extend({
                 return 'hit';
               }
             case 8:
-              if (holeCard !== 5 || holeCard !== 6){
-                return 'hit';
-              } else {
+              if (holeCard === 5 || holeCard === 6){
                 return 'split';
+              } else {
+                return 'hit';
               }
             case 10:
               if (holeCard < 10){
@@ -323,13 +322,10 @@ App.SimulationController = Ember.ArrayController.extend({
                 return 'hit';
               }
             case 10:
-              if (holeCard !== 10 || holeCard !== 'A'){
-                if (playerHand.length === 2){
-                  return 'double';
-                }
+              if (holeCard == 10 || holeCard == 'A'){
                 return 'hit';
-              } else {
-                return 'hit';
+              } else if (playerHand.length === 2){
+                return 'double';
               }
             case 11:
               if (holeCard !== 'A'){
@@ -551,25 +547,28 @@ App.SimulationController = Ember.ArrayController.extend({
 
           // If dealer busted payout all the hands
           if (calcScore(dealerHand) > 21){
-            bankroll = bankroll + ((currentBet * playerHand.length) + (currentBet * (doubleCounter.length + 1)));
-          }
-          // If not then check to see which hands won and pay those out
-          for(var p=0; p < playerHand.length; p++){
-            if (calcScore(playerHand[p]) > calcScore(dealerHand) && basicStrategy(playerHand, dealerHand) !== 'bust'){
-              if (betterContains(doubleCounter, p)){
-                bankroll = bankroll + (currentBet * 2);
-              } else {
-                bankroll = bankroll + currentBet;
+            bankroll = bankroll + ((currentBet * playerHand.length) + (currentBet * (doubleCounter.length)));
+          } else {
+            // If not then check to see which hands won and pay those out
+            for(var p=0; p < playerHand.length; p++){
+              if (calcScore(playerHand[p]) > calcScore(dealerHand) && basicStrategy(playerHand, dealerHand) !== 'bust'){
+                if (betterContains(doubleCounter, p)){
+                  bankroll = bankroll + (currentBet * 2);
+                } else {
+                  bankroll = bankroll + currentBet;
+                }
+                
+              } else if (calcScore(playerHand[p]) < calcScore(dealerHand) || basicStrategy(playerHand, dealerHand) === 'bust'){
+                bankroll = bankroll - currentBet;
               }
-              
-            } else if (calcScore(playerHand[p]) < calcScore(dealerHand) || basicStrategy(playerHand, dealerHand) === 'bust'){
-              bankroll = bankroll - currentBet;
             }
           }
           // Record Bankroll for split hands
           bankrollHistory[i] = bankroll;
 
         }
+
+        debugger;
 
         // Hand History
         // playerHandHistory.push(playerHand.slice(0));

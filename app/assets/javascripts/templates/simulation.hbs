@@ -1,0 +1,21 @@
+<h3>Strategy Simulation</h3>
+<h4>Current Count/Bet Strategy: Hi Lo Count Unlimited Proportional Bet Spread</h4>
+<h4>Current Basic Strategy: BJ 3:2 6 deck shoe, S17, DaS allowed, LS allowed, RSA allowed</h4>
+<h4>Negative Bankrolls Allowed Risk Of Ruin = N/A</h4>
+<br>
+<h5>Starting Bankroll: {{input value=startingBankroll}}</h5>
+<h5>Base Bet: {{input value=baseBet}}</h5>
+<h5>Table Min: {{input value=tableMin}}</h5>
+<h5>Number of Decks: {{input value=deckCount}}</h5>
+<h5>Hands Simulated: {{input value=handsSimulated}}</h5>
+<br>
+<h3>Low Bankroll: {{lowBankroll}}</h3>
+<h3>High Bankroll: {{highBankroll}}</h3>
+<h3>Ending Bankroll: {{endingBankroll}}</h3>
+<h3>Standard Deviation: {{standardDeviation}}</h3>
+<h4>Average Bet: {{averageBet}}</h4>
+<h4>Max Bet: {{maxBet}}</h4>
+<button {{action 'simulate'}}>Simulate</button>
+{{#if simulating}}
+Running Simulation...
+{{/if}}

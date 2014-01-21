@@ -10,3 +10,7 @@
 //= require_tree ./routes
 //= require_tree ./initializers
 //= require_self
+
+DS.RESTAdapter.reopen({
+  namespace: 'api/'
+});

@@ -30,16 +30,12 @@ App.SimulationController = Ember.ArrayController.extend({
       var playerHand = [];
       var dealerHand = [];
       var bankroll = parseInt(that.get('startingBankroll'), 10);
-      var bankrollHistory = [];
       var currentBet = 0;
       var splitCounter = [];
       var doubleCounter = [];
-      var trueCountHistory = [];
-      var betHistory = [];
       var highCards = [];
       var lowCards = [];
-      // var playerHandHistory = [];
-      // var dealerHandHistory = [];
+      var simulationData = crossfilter([]);
 
       function deal(shoe){
         var card = shoe.pop();
@@ -404,36 +400,41 @@ App.SimulationController = Ember.ArrayController.extend({
 
         if (dealerScore > 21){
           bankroll = bankroll + (currentBet * 2);
-          bankrollHistory[i] = bankroll;
+          trialData['endbankroll'] = bankroll;
 
         // Player wins
 
         } else if (playerScore > dealerScore){
           bankroll = bankroll + (currentBet * 2);
-          bankrollHistory[i] = bankroll;
+          trialData['endbankroll'] = bankroll;
 
         // Dealer wins
 
         } else if (playerScore < dealerScore){
-          bankrollHistory[i] = bankroll;
+          trialData['endbankroll'] = bankroll;
 
         // Push
 
         } else if (playerScore === dealerScore){
-          bankrollHistory[i] = bankroll + currentBet;
+          trialData['endbankroll'] = bankroll + currentBet;
         }
       }
 
       for(var i=0; i < parseInt(that.get('handsSimulated'), 10); i++){
+        // Create object for push into simulationData
+        var trialData = {};
+        trialData['trial'] = i;
 
         // Calculate true count before start of hand
 
         var trueCount = Math.round(getTrueCount(currentShoe, usedCards));
-        trueCountHistory.push(trueCount);
+        trialData['truecount'] = trueCount;
 
         if (i !== 0){
-          bankroll = bankrollHistory[i-1];
+          bankroll = simulationData[i-1]['endbankroll'];
         }
+        trialData['startbankroll'] = bankroll;
+
 
         // Bet raised based on true count
 
@@ -444,6 +445,8 @@ App.SimulationController = Ember.ArrayController.extend({
           currentBet = parseInt(that.get('tableMin'), 10);
           bankroll = bankroll - currentBet;
         }
+
+        trialData['bet'] = currentBet;
 
         // Deal out the hands, assumes playing heads up against dealer
 
@@ -458,25 +461,25 @@ App.SimulationController = Ember.ArrayController.extend({
 
         if (initialBasicStrategy === 'player blackjack'){
           bankroll = bankroll + (currentBet * 2.5);
-          bankrollHistory[i] = bankroll;
+          trialData['endbankroll'] = bankroll;
         }
         // Dealer BlackJack
 
         if (initialBasicStrategy === 'dealer blackjack'){
-          bankrollHistory[i] = bankroll;
+          trialData['endbankroll'] = bankroll;
         }
 
         // BlackJack Push
 
         if (initialBasicStrategy === 'blackjack push'){
-          bankrollHistory[i] = bankroll + currentBet;
+          trialData['endbankroll'] = bankroll + currentBet;
         }
 
         // Surrender
 
         if (initialBasicStrategy === 'surrender'){
           bankroll = bankroll + (currentBet * 0.5);
-          bankrollHistory[i] = bankroll;
+          trialData['endbankroll'] = bankroll;
         }
 
         // Stand
@@ -504,7 +507,7 @@ App.SimulationController = Ember.ArrayController.extend({
           } while (basicStrategy(playerHand, dealerHand) === 'hit');
 
           if (basicStrategy(playerHand, dealerHand) === 'bust'){
-            bankrollHistory[i] = bankroll;
+          trialData['endbankroll'] = bankroll;
           } else {
             playerStands();
           }
@@ -564,18 +567,17 @@ App.SimulationController = Ember.ArrayController.extend({
             }
           }
           // Record Bankroll for split hands
-          bankrollHistory[i] = bankroll;
+          trialData['endbankroll'] = bankroll;
 
         }
 
-        debugger;
-
         // Hand History
-        // playerHandHistory.push(playerHand.slice(0));
-        // dealerHandHistory.push(dealerHand.slice(0));
+        trialData['playerhand'] = playerHand.slice(0);
+        trialData['dealerhand'] = dealerHand.slice(0);
 
-        // Bet History
-        betHistory.push(currentBet);
+        // Push the trial data into the simulation data crossfilter
+        simulationData.add(trialData);
+
 
         // Clear out the hands
         playerHand.length = 0;
@@ -590,11 +592,13 @@ App.SimulationController = Ember.ArrayController.extend({
         }
       }
 
-      that.set('averageBet', average(betHistory));
-      that.set('maxBet', _.max(betHistory));
-      that.set('lowBankroll', _.min(Object.keys(bankrollHistory).map(function(v) { return bankrollHistory[v]; })));
-      that.set('highBankroll', _.max(Object.keys(bankrollHistory).map(function(v) { return bankrollHistory[v]; })));
-      that.set('endingBankroll', bankroll);
+      debugger;
+
+      // that.set('averageBet', average(betHistory));
+      // that.set('maxBet', _.max(betHistory));
+      // that.set('lowBankroll', _.min(Object.keys(bankrollHistory).map(function(v) { return bankrollHistory[v]; })));
+      // that.set('highBankroll', _.max(Object.keys(bankrollHistory).map(function(v) { return bankrollHistory[v]; })));
+      // that.set('endingBankroll', bankroll);
 
       that.toggleProperty('simulating');
 

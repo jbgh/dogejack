@@ -568,6 +568,9 @@ self.addEventListener('message', function(e) {
       highCards.length = 0;
       lowCards.length = 0;
     }
+    if (i % 100 === 0){
+      self.postMessage(i / data.handssimulated);
+    }
   }
   self.postMessage(simulationData);
   self.close();

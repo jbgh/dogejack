@@ -23,13 +23,19 @@ App.SimulationController = Ember.ArrayController.extend({
     simulate: function(){
       var that = this;
 
-      var worker = new Worker('simulation_worker.js');
+      var worker = new Worker('/assets/simulation_worker.js');
 
       worker.addEventListener('message', function(e) {
         var data = e.data;
+        if (typeof(e.data) === 'number'){
+          that.set('standardDeviation', e.data);
+        } else {
+          debugger;
         var simulationData = crossfilter(data);
         var endBankrolls = simulationData.dimension(function(d) { return d.endbankroll; } );
-        that.set('highBankroll', (endBankrolls.top(1)[0].endbankroll));
+        that.set('highBankroll', endBankrolls.top(1)[0].endbankroll);
+        that.set('lowBankroll', endBankrolls.bottom(1)[0].endbankroll);
+        }
       }, false);
 
       worker.postMessage({'bet': parseInt(that.get('baseBet'), 10), 'tablemin': parseInt(that.get('tableMin'), 10),

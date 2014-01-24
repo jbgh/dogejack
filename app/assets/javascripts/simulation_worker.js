@@ -555,6 +555,7 @@ self.addEventListener('message', function(e) {
 
     // Push the trial data into the simulation data crossfilter
     simulationData.push(trialData);
+    self.postMessage(trialData);
 
 
     // Clear out the hands
@@ -572,6 +573,5 @@ self.addEventListener('message', function(e) {
       self.postMessage(i / data.handssimulated);
     }
   }
-  self.postMessage(simulationData);
   self.close();
 }, false);

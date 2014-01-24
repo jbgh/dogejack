@@ -12,10 +12,13 @@
 <h3>Low Bankroll: {{lowBankroll}}</h3>
 <h3>High Bankroll: {{highBankroll}}</h3>
 <h3>Ending Bankroll: {{endingBankroll}}</h3>
-<h3>Standard Deviation: {{standardDeviation}}</h3>
-<h4>Average Bet: {{averageBet}}</h4>
-<h4>Max Bet: {{maxBet}}</h4>
+{{!-- <h4>Average Bet: {{averageBet}}</h4>
+<h4>Max Bet: {{maxBet}}</h4> --}}
 <button {{action 'simulate'}}>Simulate</button>
-{{#if simulating}}
-Running Simulation...
-{{/if}}
+
+<div class="meter">
+  <span {{bind-attr style="percentComplete"}}></span>
+</div>
+
+<div id="chart-line-bankroll"></div>
+<div id="chart-line-normalized"></div>

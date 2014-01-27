@@ -27,7 +27,7 @@ App.SimulationController = Ember.ArrayController.extend({
       var startBank = parseInt(that.get('startingBankroll'), 10);
       $(".meter").show();
 
-      var worker = new Worker('/assets/simulation_worker.js');
+      var worker = new Worker('simulation_worker.js');
 
       worker.addEventListener('message', function(e) {
 

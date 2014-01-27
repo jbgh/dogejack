@@ -24,7 +24,6 @@
 //= require_self
 //= require dogejack
 //= require vendor/bootstrap.min
-//= require simulation_worker
 
 // for more details see: http://emberjs.com/guides/application/
 App = Ember.Application.create();

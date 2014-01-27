@@ -23,7 +23,7 @@
 //= require vendor/ember-easyForm.min
 //= require_self
 //= require dogejack
-//= require bootstrap
+//= require vendor/bootstrap.min
 
 // for more details see: http://emberjs.com/guides/application/
 App = Ember.Application.create();

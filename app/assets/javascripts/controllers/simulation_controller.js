@@ -25,16 +25,18 @@ App.SimulationController = Ember.ArrayController.extend({
       var simulationData = [];
       var handsSimulated = parseInt(that.get('handsSimulated'), 10);
       var startBank = parseInt(that.get('startingBankroll'), 10);
+      $(".meter").show();
 
       var worker = new Worker('/assets/simulation_worker.js');
 
       worker.addEventListener('message', function(e) {
 
+        // Debug helper
         function print_filter(filter){
           var f=eval(filter);
           if (typeof(f.length) != "undefined") {}else{}
           if (typeof(f.top) != "undefined") {f=f.top(Infinity);}else{}
-          if (typeof(f.dimension) != "undefined") 
+          if (typeof(f.dimension) != "undefined")
           {f=f.dimension(function(d) { return "";}).top(Infinity);}else{}
           console.log(filter+"("+f.length+") = "+JSON.stringify
           (f).replace("[","[\n\t").replace(/}\,/g,"}, \n\t").replace("]","\n]"));
@@ -49,6 +51,8 @@ App.SimulationController = Ember.ArrayController.extend({
         if (e.data.trial === handsSimulated - 1){
           that.set('percentComplete', 100);
 
+          // Set normalization for bankroll and count
+
           simulationData.forEach(function(d){
             d.normalbankroll = (d.endbankroll - _.min(simulationData, function(t){ return t.endbankroll; }).endbankroll) / (_.max(simulationData, function(t){ return t.endbankroll; }).endbankroll - _.min(simulationData, function(t){ return t.endbankroll; }).endbankroll);
             d.normalcount = (d.truecount - _.min(simulationData, function(t){ return t.truecount; }).truecount) / (_.max(simulationData, function(t){ return t.truecount; }).truecount - _.min(simulationData, function(t){ return t.truecount; }).truecount);
@@ -58,7 +62,6 @@ App.SimulationController = Ember.ArrayController.extend({
 
           var endBankrolls = simulationCF.dimension(function(d) { return d.endbankroll; } );
           var trials = simulationCF.dimension(function(d) { return d.trial; });
-          var trueCounts = simulationCF.dimension(function(d) { return d.truecount; });
 
           var normalBankrolls = trials.group().reduceSum(function(d) { return d.normalbankroll; });
           var normalTrueCounts = trials.group().reduceSum(function(d) { return d.normalcount; });
